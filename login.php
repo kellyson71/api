@@ -4,11 +4,14 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Carrega as configurações
+require_once 'config.php';
+
 // Configurações do banco de dados
-$host = 'srv1844.hstgr.io';
-$dbname = 'u492577848_react';
-$username = 'u492577848_react';
-$password = 'Kellys0n_123';
+$host = getDbConfig('host');
+$dbname = getDbConfig('dbname');
+$username = getDbConfig('username');
+$password = getDbConfig('password');
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);

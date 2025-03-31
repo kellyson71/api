@@ -1,0 +1,27 @@
+# Ignorar arquivo .env com credenciais
+.env
+.env.*
+!.env.example
+
+# Ignorar pastas de cache e logs
+vendor/
+node_modules/
+logs/
+.log
+.cache
+
+# Arquivos de sistema e IDEs
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Arquivos temporários
+*.tmp
+*.bak
+*~
+
+# Arquivos de configuração local
+config.local.php 

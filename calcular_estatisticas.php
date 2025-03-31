@@ -4,13 +4,15 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
+// Carrega as configurações
+require_once 'config.php';
 require_once 'conquistas.php';
 
 // Configurações do banco de dados
-$host = 'srv1844.hstgr.io';
-$dbname = 'u492577848_react';
-$username = 'u492577848_react';
-$password = 'Kellys0n_123';
+$host = getDbConfig('host');
+$dbname = getDbConfig('dbname');
+$username = getDbConfig('username');
+$password = getDbConfig('password');
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -83,7 +85,7 @@ $estatisticas = [
     'media_minutos_atraso' => 0,
     'horas_extras' => 0,
     'horas_devidas' => 0,
-    'carga_horaria_diaria' => 6,
+    'carga_horaria_diaria' => CARGA_HORARIA_DIARIA,
     'carga_horaria_esperada' => 0,
     'media_entrada' => '',
     'media_saida' => '',
@@ -151,9 +153,9 @@ foreach ($registros as $registro) {
 
             // Verifica atraso
             $hora_entrada = $data->format('H:i');
-            if ($hora_entrada > '13:00') {
+            if ($hora_entrada > HORARIO_ENTRADA) {
                 $estatisticas['atrasos']++;
-                $minutos_atraso = (int)$data->diff(new DateTime($data_str . ' 13:00'))->format('%i');
+                $minutos_atraso = (int)$data->diff(new DateTime($data_str . ' ' . HORARIO_ENTRADA))->format('%i');
                 $total_minutos_atraso += $minutos_atraso;
             }
         } else {
@@ -178,7 +180,7 @@ foreach ($dias_registrados as $dia => $registros) {
         $total_minutos += $minutos;
 
         // Verifica se é dia completo
-        if ($minutos >= 360) { // 6 horas
+        if ($minutos >= (CARGA_HORARIA_DIARIA * 60)) { // Converte horas para minutos
             $estatisticas['dias_completos']++;
         } else {
             $estatisticas['dias_incompletos']++;
@@ -214,7 +216,7 @@ $estatisticas['media_saida'] = $total_saidas > 0 ?
     date('H:i', strtotime('00:00') + ($minutos_saida / $total_saidas * 60)) : '';
 
 // Calcula saldo de horas
-$carga_horaria_esperada = $estatisticas['dias_uteis_total'] * 6;
+$carga_horaria_esperada = $estatisticas['dias_uteis_total'] * CARGA_HORARIA_DIARIA;
 $estatisticas['carga_horaria_esperada'] = $carga_horaria_esperada;
 $estatisticas['saldo_horas'] = round($estatisticas['total_horas'] - $carga_horaria_esperada, 1);
 
