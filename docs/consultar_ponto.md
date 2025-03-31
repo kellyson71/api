@@ -1,135 +1,141 @@
-# API de Consulta de Ponto
+# Consulta de Registros de Ponto
 
 ## Descrição
+API para consultar os registros de ponto de um usuário em um período específico ou as últimas batidas de ponto.
 
-API para consultar os registros de ponto de um usuário em um determinado período.
+## Endpoints
 
-## Endpoint
+### 1. Consulta por Período
+**Endpoint:** `GET https://api.protocolosead.com/consultar_ponto.php`
 
-```
-GET https://api.protocolosead.com/consultar_ponto.php
-```
+#### Parâmetros
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| usuario_id | int | Sim | ID do usuário |
+| data_inicio | date | Sim | Data inicial (formato: YYYY-MM-DD) |
+| data_fim | date | Sim | Data final (formato: YYYY-MM-DD) |
 
-## Parâmetros
-
-| Parâmetro   | Tipo | Obrigatório | Descrição                                     |
-| ----------- | ---- | ----------- | --------------------------------------------- |
-| usuario_id  | int  | Sim         | ID do usuário                                 |
-| data_inicio | date | Sim         | Data inicial do período (formato: YYYY-MM-DD) |
-| data_fim    | date | Sim         | Data final do período (formato: YYYY-MM-DD)   |
-
-## Exemplo de Requisição
-
-```
-GET https://api.protocolosead.com/consultar_ponto.php?usuario_id=1&data_inicio=2024-03-01&data_fim=2024-03-31
+#### Exemplo de Requisição
+```http
+GET https://api.protocolosead.com/consultar_ponto.php?usuario_id=2&data_inicio=2024-03-01&data_fim=2024-03-31
 ```
 
-## Resposta de Sucesso
-
+#### Resposta de Sucesso
 ```json
 {
-  "success": true,
-  "registros": [
-    {
-      "id": 1,
-      "usuario_id": 1,
-      "data_hora": "2024-03-29 08:00:00",
-      "tipo": "entrada",
-      "latitude": "-23.55052000",
-      "longitude": "-46.63330800",
-      "endereco": "Av. Paulista, 1000",
-      "observacoes": "Chegada no trabalho"
-    },
-    {
-      "id": 2,
-      "usuario_id": 1,
-      "data_hora": "2024-03-29 18:00:00",
-      "tipo": "saida",
-      "latitude": "-23.55052000",
-      "longitude": "-46.63330800",
-      "endereco": "Av. Paulista, 1000",
-      "observacoes": "Saída do trabalho"
-    }
-  ],
-  "resumo": {
-    "total_registros": 2,
-    "total_horas": 10,
-    "registros_entrada": 1,
-    "registros_saida": 1
-  }
+    "success": true,
+    "message": "Pontos consultados com sucesso",
+    "total_registros": 42,
+    "pontos": [
+        {
+            "id": 123,
+            "usuario_id": 2,
+            "data_hora": "2024-03-20 13:00:00",
+            "tipo": "entrada",
+            "latitude": -6.123456,
+            "longitude": -38.123456,
+            "endereco": "Rua Exemplo, 123",
+            "observacoes": "Observação do ponto",
+            "data_formatada": "20/03/2024 13:00:00",
+            "tipo_formatado": "Entrada"
+        }
+    ]
 }
 ```
 
-## Resposta de Erro
+### 2. Consulta das Últimas Batidas
+**Endpoint:** `GET https://api.protocolosead.com/consultar_ultimos_pontos.php`
 
+#### Parâmetros
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| usuario_id | int | Sim | ID do usuário |
+
+#### Exemplo de Requisição
+```http
+GET https://api.protocolosead.com/consultar_ultimos_pontos.php?usuario_id=2
+```
+
+#### Resposta de Sucesso
 ```json
 {
-  "success": false,
-  "error": "Mensagem de erro"
+    "success": true,
+    "message": "Últimos pontos consultados com sucesso",
+    "total_registros": 20,
+    "pontos": [
+        {
+            "id": 123,
+            "usuario_id": 2,
+            "nome_usuario": "Nome do Usuário",
+            "matricula": "123456",
+            "data_hora": "2024-03-20 19:00:00",
+            "tipo": "saida",
+            "latitude": -6.123456,
+            "longitude": -38.123456,
+            "endereco": "Rua Exemplo, 123",
+            "observacoes": "Observação do ponto",
+            "data_formatada": "20/03/2024 19:00:00",
+            "tipo_formatado": "Saida"
+        }
+    ]
 }
 ```
 
-## Exemplo de Uso em JavaScript
+#### Características da Consulta das Últimas Batidas
+- Retorna as 20 batidas de ponto mais recentes
+- Ordenadas do mais recente para o mais antigo
+- Inclui dados do usuário (nome e matrícula)
+- Formatação de data e hora em formato brasileiro
+- Tipo de ponto formatado com primeira letra maiúscula
 
+## Exemplos de Uso
+
+### JavaScript
 ```javascript
-const params = new URLSearchParams({
-  usuario_id: 1,
-  data_inicio: "2024-03-01",
-  data_fim: "2024-03-31",
-});
+// Consulta por período
+fetch('https://api.protocolosead.com/consultar_ponto.php?usuario_id=2&data_inicio=2024-03-01&data_fim=2024-03-31')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Total de registros:', data.total_registros);
+            data.pontos.forEach(ponto => {
+                console.log(`${ponto.data_formatada} - ${ponto.tipo_formatado}`);
+            });
+        }
+    });
 
-fetch(`https://api.protocolosead.com/consultar_ponto.php?${params}`)
-  .then((response) => response.json())
-  .then((data) => {
-    if (data.success) {
-      console.log("Registros:", data.registros);
-      console.log("Resumo:", data.resumo);
-    } else {
-      console.error("Erro:", data.error);
-    }
-  })
-  .catch((error) => console.error("Erro na requisição:", error));
+// Consulta das últimas batidas
+fetch('https://api.protocolosead.com/consultar_ultimos_pontos.php?usuario_id=2')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Últimas batidas:', data.pontos);
+        }
+    });
 ```
 
-## Exemplo de Uso em PHP
-
+### PHP
 ```php
-$params = http_build_query([
-    'usuario_id' => 1,
-    'data_inicio' => '2024-03-01',
-    'data_fim' => '2024-03-31'
-]);
-
-$url = "https://api.protocolosead.com/consultar_ponto.php?{$params}";
-
-$ch = curl_init($url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
+// Consulta por período
+$url = 'https://api.protocolosead.com/consultar_ponto.php?usuario_id=2&data_inicio=2024-03-01&data_fim=2024-03-31';
+$response = file_get_contents($url);
 $data = json_decode($response, true);
 
-if ($data['success']) {
-    echo "Total de registros: " . $data['resumo']['total_registros'] . "\n";
-    echo "Total de horas: " . $data['resumo']['total_horas'] . "\n";
-
-    foreach ($data['registros'] as $registro) {
-        echo "Data/Hora: {$registro['data_hora']} - Tipo: {$registro['tipo']}\n";
-    }
-} else {
-    echo "Erro: " . $data['error'];
-}
+// Consulta das últimas batidas
+$url = 'https://api.protocolosead.com/consultar_ultimos_pontos.php?usuario_id=2';
+$response = file_get_contents($url);
+$data = json_decode($response, true);
 ```
 
 ## Validações
-
-- Usuário deve existir no sistema
-- Data inicial deve ser anterior ou igual à data final
-- Período máximo de consulta é de 31 dias
-- Datas devem estar no formato YYYY-MM-DD
+- O usuário deve existir no sistema
+- As datas devem estar no formato correto (YYYY-MM-DD)
+- A data final não pode ser maior que a data atual
+- O ID do usuário deve ser um número positivo
 
 ## Observações
-
-- A API retorna todos os registros de ponto do período especificado
-- Inclui um resumo com totais e contagens
-- Os registros são ordenados por data/hora
-- Campos de localização (latitude, longitude, endereço) são opcionais
-- As observações podem conter informações adicionais sobre o registro
+- Os registros são retornados em ordem cronológica
+- A consulta das últimas batidas retorna no máximo 20 registros
+- As datas são retornadas no formato brasileiro (dd/mm/yyyy)
+- O tipo de ponto é formatado com primeira letra maiúscula
+- A consulta das últimas batidas inclui informações adicionais do usuário
