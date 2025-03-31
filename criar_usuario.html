@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Usuário - Sistema de Ponto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            width: 100%;
+            padding: 0.8rem;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        .alert {
+            display: none;
+            margin-top: 1rem;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h2 class="form-title">
+                <i class="fas fa-user-plus me-2"></i>
+                Criar Novo Usuário
+            </h2>
+            
+            <form id="criarUsuarioForm">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="matricula" name="matricula" required>
+                    <label for="matricula">Matrícula</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="name" name="name">
+                    <label for="name">Nome Completo</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="email" name="email" required>
+                    <label for="email">Email</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="tel" class="form-control" id="telefone" name="telefone">
+                    <label for="telefone">Telefone</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input type="password" class="form-control" id="password" name="password" required>
+                    <label for="password">Senha</label>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <select class="form-select" id="cargo" name="cargo">
+                        <option value="usuario">Usuário</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                    <label for="cargo">Cargo</label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="time" class="form-control" id="hora_entrada" name="hora_entrada" value="08:00">
+                            <label for="hora_entrada">Hora de Entrada</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="time" class="form-control" id="hora_saida" name="hora_saida" value="18:00">
+                            <label for="hora_saida">Hora de Saída</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    Criar Usuário
+                </button>
+            </form>
+
+            <div class="alert alert-success" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                Usuário criado com sucesso!
+            </div>
+
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorMessage"></span>
+            </div>
+
+            <div class="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('criarUsuarioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Mostrar loading
+            document.querySelector('.loading').style.display = 'block';
+            document.querySelector('.alert-success').style.display = 'none';
+            document.querySelector('.alert-danger').style.display = 'none';
+
+            const formData = {
+                matricula: document.getElementById('matricula').value,
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value,
+                password: document.getElementById('password').value,
+                cargo: document.getElementById('cargo').value,
+                hora_entrada: document.getElementById('hora_entrada').value,
+                hora_saida: document.getElementById('hora_saida').value
+            };
+
+            try {
+                const response = await fetch('https://api.protocolosead.com/gerenciar_usuarios.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.querySelector('.alert-success').style.display = 'block';
+                    document.getElementById('criarUsuarioForm').reset();
+                } else {
+                    document.querySelector('.alert-danger').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = data.error || 'Erro ao criar usuário';
+                }
+            } catch (error) {
+                document.querySelector('.alert-danger').style.display = 'block';
+                document.getElementById('errorMessage').textContent = 'Erro ao conectar com o servidor';
+            } finally {
+                document.querySelector('.loading').style.display = 'none';
+            }
+        });
+
+        // Máscara para o telefone
+        document.getElementById('telefone').addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+    </script>
+</body>
+</html> 
